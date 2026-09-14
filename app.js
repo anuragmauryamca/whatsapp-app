@@ -2,27 +2,27 @@
 const express = require("express");
 
 const app = express();
+
 app.use(express.json());
 
-const port = 3000;
+const port = process.env.PORT || 3000;
+
 
 // =====================================================
-// CONFIGURATION
+// CONFIGURATION - HARD CODED FOR TESTING
 // =====================================================
 
-// Meta Webhook Verify Token
-const VERIFY_TOKEN = "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
+const VERIFY_TOKEN =
+    "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
 
-// WhatsApp Permanent Access Token
-// IMPORTANT: Testing ke liye yahan daal sakte ho.
-// Production mein ENV variable use karna.
-const ACCESS_TOKEN = "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
+const ACCESS_TOKEN =
+    "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
 
-// WhatsApp Phone Number ID
-const PHONE_NUMBER_ID = "1184064238133452";
+const PHONE_NUMBER_ID =
+    "1184064238133452";
 
-// Graph API Version
-const GRAPH_API_VERSION = "v23.0";
+const GRAPH_API_VERSION =
+    "v23.0";
 
 
 // =====================================================
@@ -32,10 +32,14 @@ const GRAPH_API_VERSION = "v23.0";
 app.get("/", (req, res) => {
 
     const mode = req.query["hub.mode"];
+
     const challenge = req.query["hub.challenge"];
+
     const token = req.query["hub.verify_token"];
 
+
     console.log("Webhook verification request received");
+
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
 
@@ -43,6 +47,7 @@ app.get("/", (req, res) => {
 
         return res.status(200).send(challenge);
     }
+
 
     console.log("WEBHOOK VERIFICATION FAILED");
 
@@ -60,26 +65,28 @@ app.post("/", async (req, res) => {
     console.log("WhatsApp Webhook Received");
     console.log("=================================");
 
+
     console.log(
         JSON.stringify(req.body, null, 2)
     );
 
-    // Meta ko immediately 200 response
+
+    // Meta ko immediately response
     res.sendStatus(200);
+
 
     try {
 
-        // WhatsApp webhook data
         const entry = req.body?.entry?.[0];
 
         const change = entry?.changes?.[0];
 
         const value = change?.value;
 
-        // Received message
         const message = value?.messages?.[0];
 
-        // Agar message nahi hai
+
+        // Message nahi hai
         // Example: status update
         if (!message) {
 
@@ -88,19 +95,29 @@ app.post("/", async (req, res) => {
             return;
         }
 
-        // Sender WhatsApp number
+
+        // Customer ka WhatsApp number
         const from = message.from;
 
-        console.log("Message received from:", from);
 
-        console.log("Message type:", message.type);
+        console.log(
+            "Message received from:",
+            from
+        );
+
+
+        console.log(
+            "Message type:",
+            message.type
+        );
 
 
         // =================================================
-        // SEND hello_world TEMPLATE
+        // SEND HELLO_WORLD TEMPLATE
         // =================================================
 
         await sendHelloWorldTemplate(from);
+
 
     } catch (error) {
 
@@ -118,8 +135,13 @@ app.post("/", async (req, res) => {
 
 async function sendHelloWorldTemplate(to) {
 
+    // IMPORTANT:
+    // Yahan sirf normal URL hai.
+    // Markdown link nahi hai.
+
     const url =
         `https://graph.facebook.com/${GRAPH_API_VERSION}/${PHONE_NUMBER_ID}/messages`;
+
 
     const requestBody = {
 
@@ -144,7 +166,11 @@ async function sendHelloWorldTemplate(to) {
     };
 
 
-    console.log("\nSending hello_world template...");
+    console.log(
+        "\nSending hello_world template to:",
+        to
+    );
+
 
     console.log(
         JSON.stringify(requestBody, null, 2)
@@ -157,9 +183,11 @@ async function sendHelloWorldTemplate(to) {
 
         headers: {
 
-            "Authorization": `Bearer ${ACCESS_TOKEN}`,
+            "Authorization":
+                `Bearer ${ACCESS_TOKEN}`,
 
-            "Content-Type": "application/json"
+            "Content-Type":
+                "application/json"
 
         },
 
@@ -186,11 +214,19 @@ async function sendHelloWorldTemplate(to) {
 
 
     console.log(
+        "================================="
+    );
+
+    console.log(
         "Template sent successfully!"
     );
 
     console.log(
         JSON.stringify(result, null, 2)
+    );
+
+    console.log(
+        "================================="
     );
 }
 
@@ -202,12 +238,15 @@ async function sendHelloWorldTemplate(to) {
 app.listen(port, () => {
 
     console.log("\n=================================");
-    console.log(`Server running on port ${port}`);
+
+    console.log(
+        `Server running on port ${port}`
+    );
+
     console.log("=================================");
 
     console.log(
-        `Webhook URL: http://localhost:${port}/webhook`
+        `Webhook URL: /`
     );
-
 });
 ```

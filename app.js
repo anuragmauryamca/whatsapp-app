@@ -128,7 +128,7 @@ async function sendHelloWorld(to) {
 
         messaging_product: "whatsapp",
 
-        to: to,
+        to: "919454060447",
 
         type: "template",
 

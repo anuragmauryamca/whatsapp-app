@@ -139,8 +139,7 @@ async function sendHelloWorldTemplate(to) {
     // Yahan sirf normal URL hai.
     // Markdown link nahi hai.
 
-    const url =
-        `https://graph.facebook.com/${GRAPH_API_VERSION}/${PHONE_NUMBER_ID}/messages`;
+    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${PHONE_NUMBER_ID}/messages`;
 
 
     const requestBody = {

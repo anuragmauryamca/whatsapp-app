@@ -9,20 +9,12 @@ const port = process.env.PORT || 3000;
 
 
 // =====================================================
-// CONFIGURATION - HARD CODED FOR TESTING
+// CONFIGURATION
 // =====================================================
 
-const VERIFY_TOKEN =
-    "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
+const VERIFY_TOKEN = "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
 
-const ACCESS_TOKEN =
-    "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
-
-const PHONE_NUMBER_ID =
-    "1184064238133452";
-
-const GRAPH_API_VERSION =
-    "v23.0";
+const ACCESS_TOKEN = "EAAPPqQKCdogBSe2Khqfr7gZCMZColKk1pZCCYydG1xTF3utTFFaFzlJsM2elvOx0ItZAs3ZAwnqBEDiudemJYlxgZCiMu19liA6ZAJ2RdyFWhltA6egP9NMGr4exo0lkASJ53vIhr3VheZBHUaZAw5kAqvzluXIWjyLiuylYtjuBHtLflgc2m9S8vUCOBZB9rcFwZDZD";
 
 
 // =====================================================
@@ -32,14 +24,10 @@ const GRAPH_API_VERSION =
 app.get("/", (req, res) => {
 
     const mode = req.query["hub.mode"];
-
     const challenge = req.query["hub.challenge"];
-
     const token = req.query["hub.verify_token"];
 
-
     console.log("Webhook verification request received");
-
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
 
@@ -47,7 +35,6 @@ app.get("/", (req, res) => {
 
         return res.status(200).send(challenge);
     }
-
 
     console.log("WEBHOOK VERIFICATION FAILED");
 
@@ -62,32 +49,28 @@ app.get("/", (req, res) => {
 app.post("/", async (req, res) => {
 
     console.log("\n=================================");
-    console.log("WhatsApp Webhook Received");
+    console.log("WHATSAPP WEBHOOK RECEIVED");
     console.log("=================================");
-
 
     console.log(
         JSON.stringify(req.body, null, 2)
     );
 
 
-    // Meta ko immediately response
+    // Meta ko immediately 200 response
     res.sendStatus(200);
 
 
     try {
 
-        const entry = req.body?.entry?.[0];
-
-        const change = entry?.changes?.[0];
-
-        const value = change?.value;
-
-        const message = value?.messages?.[0];
+        const message =
+            req.body?.entry?.[0]
+                ?.changes?.[0]
+                ?.value
+                ?.messages?.[0];
 
 
-        // Message nahi hai
-        // Example: status update
+        // Agar message nahi hai
         if (!message) {
 
             console.log("No WhatsApp message found.");
@@ -96,18 +79,18 @@ app.post("/", async (req, res) => {
         }
 
 
-        // Customer ka WhatsApp number
+        // Customer WhatsApp number
         const from = message.from;
 
 
         console.log(
-            "Message received from:",
+            "Customer Number:",
             from
         );
 
 
         console.log(
-            "Message type:",
+            "Message Type:",
             message.type
         );
 
@@ -116,13 +99,13 @@ app.post("/", async (req, res) => {
         // SEND HELLO_WORLD TEMPLATE
         // =================================================
 
-        await sendHelloWorldTemplate(from);
+        await sendHelloWorld(from);
 
 
     } catch (error) {
 
         console.error(
-            "Webhook processing error:",
+            "Webhook Error:",
             error
         );
     }
@@ -133,16 +116,15 @@ app.post("/", async (req, res) => {
 // SEND HELLO_WORLD TEMPLATE
 // =====================================================
 
-async function sendHelloWorldTemplate(to) {
+async function sendHelloWorld(to) {
 
-    // IMPORTANT:
-    // Yahan sirf normal URL hai.
-    // Markdown link nahi hai.
-
-    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${PHONE_NUMBER_ID}/messages`;
+    // HARD-CODED GRAPH API URL
+    const url =
+        "https://graph.facebook.com/v23.0/1184064238133452/messages";
 
 
-    const requestBody = {
+    // WhatsApp template request
+    const body = {
 
         messaging_product: "whatsapp",
 
@@ -165,14 +147,11 @@ async function sendHelloWorldTemplate(to) {
     };
 
 
+    console.log("\nSending hello_world template...");
+
     console.log(
-        "\nSending hello_world template to:",
+        "To:",
         to
-    );
-
-
-    console.log(
-        JSON.stringify(requestBody, null, 2)
     );
 
 
@@ -183,14 +162,14 @@ async function sendHelloWorldTemplate(to) {
         headers: {
 
             "Authorization":
-                `Bearer ${ACCESS_TOKEN}`,
+                "Bearer " + ACCESS_TOKEN,
 
             "Content-Type":
                 "application/json"
 
         },
 
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(body)
 
     });
 
@@ -198,14 +177,19 @@ async function sendHelloWorldTemplate(to) {
     const result = await response.json();
 
 
+    console.log(
+        "\nWhatsApp API Response:"
+    );
+
+    console.log(
+        JSON.stringify(result, null, 2)
+    );
+
+
     if (!response.ok) {
 
         console.error(
-            "WhatsApp API Error:"
-        );
-
-        console.error(
-            JSON.stringify(result, null, 2)
+            "FAILED TO SEND TEMPLATE"
         );
 
         return;
@@ -213,21 +197,9 @@ async function sendHelloWorldTemplate(to) {
 
 
     console.log(
-        "================================="
+        "HELLO_WORLD TEMPLATE SENT SUCCESSFULLY"
     );
-
-    console.log(
-        "Template sent successfully!"
-    );
-
-    console.log(
-        JSON.stringify(result, null, 2)
-    );
-
-    console.log(
-        "================================="
-    );
-}
+});
 
 
 // =====================================================
@@ -237,15 +209,9 @@ async function sendHelloWorldTemplate(to) {
 app.listen(port, () => {
 
     console.log("\n=================================");
-
-    console.log(
-        `Server running on port ${port}`
-    );
-
+    console.log("WhatsApp Webhook Server Started");
+    console.log("Port:", port);
     console.log("=================================");
 
-    console.log(
-        `Webhook URL: /`
-    );
 });
 ```

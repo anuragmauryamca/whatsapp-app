@@ -196,10 +196,10 @@ async function sendHelloWorld(to) {
     }
 
 
-    console.log(
-        "HELLO_WORLD TEMPLATE SENT SUCCESSFULLY"
-    );
-});
+   console.log(
+    "HELLO_WORLD TEMPLATE SENT SUCCESSFULLY"
+);
+}
 
 
 // =====================================================
